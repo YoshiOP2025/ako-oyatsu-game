@@ -65,11 +65,19 @@ const snacks = [
 ];
 
 function createSnack(x, level = 0) {
-  return Bodies.circle(x, 40, snacks[level].radius, {
-    render: { fillStyle: snacks[level].color },
+  const snack = Bodies.circle(x, 40, 30, {
     label: "snack",
     level: level
+    render:{
+      sprite:{
+        texture: snackImage[level],
+        xScale: 0.3,
+        yScale: 0.3
+      }
+  }
+
   });
+  return snack;
 }
 
 document.addEventListener("click", e => {

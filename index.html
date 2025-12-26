@@ -64,13 +64,21 @@ const snacks = [
   { radius: 40, color: "#ffe066" }
 ];
 
+const snackImages = [
+  "strawberry.png",   // イチゴ
+  "blueberry.png",    // ブルーベリー
+  "whip.png",         // ホイップ
+  "cookie.png",       // クッキー
+  "cheesecake.png"    // チーズケーキ
+];
+
 function createSnack(x, level = 0) {
   const snack = Bodies.circle(x, 40, 30, {
     label: "snack",
-    level: level
+    level: level,
     render:{
       sprite:{
-        texture: snackImage[level],
+        texture: snackImages[level],
         xScale: 0.3,
         yScale: 0.3
       }

@@ -56,22 +56,13 @@ const render = Render.create({
 const ground = Bodies.rectangle(200, 590, 400, 20, { isStatic: true });
 World.add(engine.world, ground);
 
-const snacks = [
-  { radius: 18, color: "#ff4d4d" },
-  { radius: 22, color: "#5f6caf" },
-  { radius: 26, color: "#ffffff" },
-  { radius: 32, color: "#c68642" },
-  { radius: 40, color: "#ffe066" }
-];
-
 const snackImages = [
-  "strawberry.png",   // イチゴ
-  "blueberry.png",    // ブルーベリー
-  "whip.png",         // ホイップ
-  "cookie.png",       // クッキー
-  "cheesecake.png"    // チーズケーキ
+  "strawberry.png",
+  "blueberry.png",
+  "whip.png",
+  "cookie.png",
+  "cheesecake.png"
 ];
-
 
 function createSnack(x, level = 0) {
   const snack = Bodies.circle(x, 40, 30, {
@@ -87,7 +78,6 @@ function createSnack(x, level = 0) {
   });
   return snack;
 }
-
 
 document.addEventListener("click", e => {
   const rect = render.canvas.getBoundingClientRect();
@@ -111,7 +101,7 @@ Events.on(engine, "collisionStart", event => {
       );
       World.add(engine.world, next);
 
-      if (next.level === snacks.length - 1) {
+      if (next.level === snackImages.length - 1) {
         document.getElementById("message").style.display = "block";
       }
     }

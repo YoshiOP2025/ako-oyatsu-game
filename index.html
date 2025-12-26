@@ -72,21 +72,22 @@ const snackImages = [
   "cheesecake.png"    // チーズケーキ
 ];
 
+
 function createSnack(x, level = 0) {
   const snack = Bodies.circle(x, 40, 30, {
     label: "snack",
     level: level,
-    render:{
-      sprite:{
+    render: {
+      sprite: {
         texture: snackImages[level],
         xScale: 0.3,
         yScale: 0.3
       }
-  }
-
+    }
   });
   return snack;
 }
+
 
 document.addEventListener("click", e => {
   const rect = render.canvas.getBoundingClientRect();

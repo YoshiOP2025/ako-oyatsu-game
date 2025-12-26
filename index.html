@@ -101,7 +101,7 @@ Events.on(engine, "collisionStart", event => {
     const b = pair.bodyB;
 
     if (a.label === "snack" && b.label === "snack" && a.level === b.level) {
-      if (a.level === snacks.length - 1) return;
+      if (a.level === snackImages.length - 1) return;
 
       World.remove(engine.world, [a, b]);
 

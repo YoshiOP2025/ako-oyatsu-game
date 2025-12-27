@@ -72,8 +72,8 @@ World.add(engine.world, ground);
 
 // GitHub の実ファイル名に完全一致させた画像リスト（進化順）
 const snackImages = [
-  "strawberry.png.png",   // 0 イチゴ
-  "blueberry.png.png",    // 1 ブルーベリー
+  "blueberry.png.png",    // 0 ブルーベリー
+  "strawberry.png.png",   // 1 イチゴ
   "whip.png.png",         // 2 ホイップ
   "cookie.png.png",       // 3 クッキー
   "cheesecake.png.png"    // 4 チーズケーキ
@@ -81,11 +81,11 @@ const snackImages = [
 
 // レベルごとの大きさ（スイカゲーム風）
 const snackScale = [
-  0.10, // strawberry
-  0.08, // blueberry
-  0.40, // whip
-  0.50, // cookie
-  0.40  // cheesecake
+  0.06, // blueberry
+  0.08, // strawberry
+  0.80, // whip
+  0.80, // cookie
+  0.30  // cheesecake
 ];
 
 // おやつ生成（サイズ反映版）
@@ -99,9 +99,10 @@ function createSnack(x, level = 0) {
 const snack = Bodies.rectangle(x, 40, size, size, {
   label: "snack",
   level: level,
-  friction: 0.9,        // 摩擦を強くする → 滑らない
-  frictionStatic: 1.0,  // 静止摩擦を強くする → 止まりやすい
-  restitution: 0.0,     // 反発をゼロにする → 跳ねない
+  friction: 1.0,         // 摩擦（すべらない）
+  frictionStatic: 1.0,   // 静止摩擦（止まりやすい）
+  restitution: 0.0,      // 反発ゼロ（跳ねない）
+  density: 0.002,        // 重さ（軽すぎると積もらない）
   render: {
     sprite: {
       texture: snackImages[level],
@@ -110,7 +111,6 @@ const snack = Bodies.rectangle(x, 40, size, size, {
     }
   }
 });
-
 
 // クリックで落とす
 document.addEventListener("click", e => {

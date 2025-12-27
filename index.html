@@ -85,20 +85,21 @@ const snackScale = [
 function createSnack(x, level = 0) {
   const scale = snackScale[level];
 
-  // 基準サイズ（画像の見た目と当たり判定を揃える）
-  const baseSize = 100; 
+  function createSnack(x, level = 0) {
+  const scale = snackScale[level];
+
+  // 元画像のサイズ（あなたの画像に合わせて調整）
+  const baseSize = 120;
   const size = baseSize * scale;
 
-  const snack = Bodies.circle(x, 40, size / 2, {
+  const snack = Bodies.rectangle(x, 40, size, size, {
     label: "snack",
     level: level,
     render: {
       sprite: {
         texture: snackImages[level],
         xScale: scale,
-        yScale: scale,
-        width: size,
-        height: size
+        yScale: scale
       }
     }
   });

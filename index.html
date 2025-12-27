@@ -63,25 +63,36 @@ const render = Render.create({
 const ground = Bodies.rectangle(200, 590, 400, 20, { isStatic: true });
 World.add(engine.world, ground);
 
-// GitHub の実ファイル名に完全一致させた画像リスト
+// GitHub の実ファイル名に完全一致させた画像リスト（進化順）
 const snackImages = [
-  "strawberry.png.png",   // イチゴ
-  "blueberry.png.png",    // ブルーベリー
-  "whip.png.png",             // 新しく追加したホイップ
-  "cookie.png.png",       // クッキー
-  "cheesecake.png.png"    // チーズケーキ
+  "strawberry.png.png",   // 0 イチゴ
+  "blueberry.png.png",    // 1 ブルーベリー
+  "whip.png.png",         // 2 ホイップ
+  "cookie.png.png",       // 3 クッキー
+  "cheesecake.png.png"    // 4 チーズケーキ
+];
+
+// スイカゲーム風のサイズ感（レベルごとに大きく）
+const snackScale = [
+  0.45, // strawberry
+  0.35, // blueberry
+  0.55, // whip
+  0.75, // cookie
+  1.0   // cheesecake
 ];
 
 // おやつ生成
 function createSnack(x, level = 0) {
-  const snack = Bodies.circle(x, 40, 30, {
+  const scale = snackScale[level];
+
+  const snack = Bodies.circle(x, 40, 30 * scale, {
     label: "snack",
     level: level,
     render: {
       sprite: {
         texture: snackImages[level],
-        xScale: 0.3,
-        yScale: 0.3
+        xScale: scale,
+        yScale: scale
       }
     }
   });

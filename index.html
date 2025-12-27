@@ -96,20 +96,20 @@ function createSnack(x, level = 0) {
   const baseSize = 35;
   const size = baseSize * scale;
 
-  const snack = Bodies.rectangle(x, 40, size, size, {
-    label: "snack",
-    level: level,
-    render: {
-      sprite: {
-        texture: snackImages[level],
-        xScale: scale,
-        yScale: scale
-      }
+const snack = Bodies.rectangle(x, 40, size, size, {
+  label: "snack",
+  level: level,
+  friction: 0.9,        // 摩擦を強くする → 滑らない
+  frictionStatic: 1.0,  // 静止摩擦を強くする → 止まりやすい
+  restitution: 0.0,     // 反発をゼロにする → 跳ねない
+  render: {
+    sprite: {
+      texture: snackImages[level],
+      xScale: scale,
+      yScale: scale
     }
-  });
-
-  return snack;
-}
+  }
+});
 
 
 // クリックで落とす

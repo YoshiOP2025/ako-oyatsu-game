@@ -81,6 +81,29 @@ const snackScale = [
   1.00  // cheesecake
 ];
 
+// おやつ生成（サイズ反映版）
+function createSnack(x, level = 0) {
+  const scale = snackScale[level];
+
+  // 元画像のサイズ（あなたの画像に合わせて調整）
+  const baseSize = 60;
+  const size = baseSize * scale;
+
+  const snack = Bodies.rectangle(x, 40, size, size, {
+    label: "snack",
+    level: level,
+    render: {
+      sprite: {
+        texture: snackImages[level],
+        xScale: scale,
+        yScale: scale
+      }
+    }
+  });
+
+  return snack;
+}
+
 
 // クリックで落とす
 document.addEventListener("click", e => {

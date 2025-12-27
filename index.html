@@ -45,9 +45,11 @@
 <div id="message">🎉 おめでとう！ 🎉</div>
 <div id="game"></div>
 
+<!-- Matter.js 読み込み -->
 <script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
-<script>
 
+<!-- ★★★ ここからゲームの JavaScript ★★★ -->
+<script>
 
 const { Engine, Render, World, Bodies, Events } = Matter;
 
@@ -55,7 +57,7 @@ const engine = Engine.create();
 engine.world.gravity.y = 0.4;
 
 let score = 0;
-let nextLevel = 0; // 次に落ちてくるおやつのレベル
+let nextLevel = 0;
 
 // Canvas を #game の中に描画
 const render = Render.create({
@@ -68,51 +70,44 @@ const render = Render.create({
   }
 });
 
-// 地面
+// 地面（画面外に配置）
 const ground = Bodies.rectangle(200, 650, 400, 100, { isStatic: true });
 World.add(engine.world, ground);
 
-// GitHub の実ファイル名に完全一致させた画像リスト（進化順）
+// GitHub の画像ファイル名
 const snackImages = [
-  "blueberry.png.png",    // 0 ブルーベリー
-  "strawberry.png.png",   // 1 イチゴ
-  "whip.png.png",         // 2 ホイップ
-  "cookie.png.png",       // 3 クッキー
-  "cheesecake.png.png"    // 4 チーズケーキ
+  "blueberry.png.png",
+  "strawberry.png.png",
+  "whip.png.png",
+  "cookie.png.png",
+  "cheesecake.png.png"
 ];
 
-// レベルごとの大きさ（スイカゲーム風）
-const snackScale = [
-  0.06, // blueberry
-  0.08, // strawberry
-  0.80, // whip
-  0.80, // cookie
-  0.30  // cheesecake
-];
+// サイズ調整
+const snackScale = [0.06, 0.08, 0.80, 0.80, 0.30];
 
-// おやつ生成（サイズ反映版）
+// おやつ生成
 function createSnack(x, level = 0) {
   const scale = snackScale[level];
-
-  // 元画像のサイズ（あなたの画像に合わせて調整）
   const baseSize = 35;
   const size = baseSize * scale;
 
-const snack = Bodies.rectangle(x, 40, size, size, {
-  label: "snack",
-  level: level,
-  friction: 1.0,         // 摩擦（すべらない）
-  frictionStatic: 1.0,   // 静止摩擦（止まりやすい）
-  restitution: 0.0,      // 反発ゼロ（跳ねない）
-  density: 0.002,        // 重さ（軽すぎると積もらない）
-  render: {
-    sprite: {
-      texture: snackImages[level],
-      xScale: scale,
-      yScale: scale
+  return Bodies.rectangle(x, 40, size, size, {
+    label: "snack",
+    level: level,
+    friction: 1.0,
+    frictionStatic: 1.0,
+    restitution: 0.0,
+    density: 0.002,
+    render: {
+      sprite: {
+        texture: snackImages[level],
+        xScale: scale,
+        yScale: scale
+      }
     }
-  }
-});
+  });
+}
 
 // クリックで落とす
 document.addEventListener("click", e => {
@@ -138,7 +133,6 @@ Events.on(engine, "collisionStart", event => {
       );
       World.add(engine.world, next);
 
-      // 最終レベルでお祝いメッセージ
       if (next.level === snackImages.length - 1) {
         document.getElementById("message").style.display = "block";
       }
@@ -148,8 +142,9 @@ Events.on(engine, "collisionStart", event => {
 
 Engine.run(engine);
 Render.run(render);
-</script>
 
+</script>
+<!-- ★★★ ここまでゲームの JavaScript ★★★ -->
 
 </body>
 </html>

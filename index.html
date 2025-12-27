@@ -52,6 +52,9 @@ const { Engine, Render, World, Bodies, Events } = Matter;
 const engine = Engine.create();
 engine.world.gravity.y = 0.4;
 
+let score = 0;
+let nextLevel = 0; // 次に落ちてくるおやつのレベル
+
 // Canvas を #game の中に描画
 const render = Render.create({
   element: document.getElementById("game"),

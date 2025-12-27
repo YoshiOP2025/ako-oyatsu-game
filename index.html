@@ -72,30 +72,37 @@ const snackImages = [
   "cheesecake.png.png"    // 4 チーズケーキ
 ];
 
-// スイカゲーム風のサイズ感（レベルごとに大きく）
+// レベルごとの大きさ（スイカゲーム風）
 const snackScale = [
-  0.45, // strawberry
-  0.35, // blueberry
+  0.40, // strawberry
+  0.30, // blueberry
   0.55, // whip
   0.75, // cookie
-  1.0   // cheesecake
+  1.00  // cheesecake
 ];
 
-// おやつ生成
+// おやつ生成（サイズ反映版）
 function createSnack(x, level = 0) {
   const scale = snackScale[level];
 
-  const snack = Bodies.circle(x, 40, 30 * scale, {
+  // 基準サイズ（画像の見た目と当たり判定を揃える）
+  const baseSize = 100; 
+  const size = baseSize * scale;
+
+  const snack = Bodies.circle(x, 40, size / 2, {
     label: "snack",
     level: level,
     render: {
       sprite: {
         texture: snackImages[level],
         xScale: scale,
-        yScale: scale
+        yScale: scale,
+        width: size,
+        height: size
       }
     }
   });
+
   return snack;
 }
 

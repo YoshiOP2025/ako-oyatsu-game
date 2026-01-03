@@ -3,13 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <title>あこちゃんのおやつゲーム</title>
-
     <style>
         body {
             margin: 0;
             text-align: center;
-            background: #fff9c4; /* 薄い黄色 */
+            background: #fff9c4;
             font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            font-size: 32px;
+            color: #ff6f91;
+            margin: 10px 0;
+        }
+
+        #score {
+            font-size: 20px;
+            color: #d85a7f;
         }
 
         #game {
@@ -20,212 +30,279 @@
 
         canvas {
             border: 4px solid #ffb703;
-            background: #ffe4f2; /* うすいピンク（箱の中） */
+            background: #ffe4f2;
         }
 
-        h1 {
-            font-size: 40px;
-            color: #ff6f91;
-            margin-top: 20px;
-            margin-bottom: 10px;
-        }
-
-        #score, #next {
-            font-size: 24px;
-            margin: 5px 0;
+        #next {
+            font-size: 18px;
+            margin-top: 5px;
             color: #d85a7f;
         }
 
-        /* 🎉 おめでとうメッセージ */
+        #next img {
+            vertical-align: middle;
+        }
+
         #message {
-            font-size: 60px;
+            font-size: 40px;
             color: gold;
             display: none;
             animation: sparkle 1s infinite;
+            margin-top: 10px;
         }
 
         @keyframes sparkle {
-            0% {
-                transform: scale(1);
-                opacity: 1;
-            }
-
-            50% {
-                transform: scale(1.1);
-                opacity: 0.7;
-            }
-
-            100% {
-                transform: scale(1);
-                opacity: 1;
-            }
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
         }
 
-        /* GAME OVER 表示 */
         #gameover {
             display: none;
             position: absolute;
             top: 40%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 48px;
+            font-size: 36px;
             font-weight: bold;
             color: red;
+            text-shadow: 2px 2px 0 #fff;
+        }
+
+        #restart {
+            margin-top: 10px;
+            padding: 8px 16px;
+            font-size: 18px;
+            border-radius: 8px;
+            border: none;
+            background: #ff9eaa;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-
-    <h1>🍰 あこちゃんのおやつゲーム 🍓</h1>
-
+    <h1>🍰 あこちゃんのおやつゲーム🍓</h1>
     <div id="score">スコア: 0</div>
     <div id="next">次のおやつ：<img id="nextImg" width="40"></div>
-
     <div id="message">🎉 おめでとう！ 🎉</div>
-    <div id="game"></div>
+
+    <div id="game">
+        <canvas id="world"></canvas>
+    </div>
+
     <div id="gameover">GAME OVER</div>
+    <button id="restart">リスタート</button>
 
     <!-- Matter.js -->
     <script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
 
-    <!-- ★★★ ゲームの JavaScript ★★★ -->
     <script>
-        const { Engine, Render, World, Bodies, Events, Composite } = Matter;
+    const { Engine, Render, Runner, World, Bodies, Events, Composite } = Matter;
 
-        const engine = Engine.create();
-        engine.world.gravity.y = 0.4;
+    const width = 400;
+    const height = 600;
 
-        let score = 0;
-        let nextLevel = 0;
+    const engine = Engine.create();
+    const world = engine.world;
 
-        const render = Render.create({
-            element: document.getElementById("game"),
-            engine: engine,
-            options: {
-                width: 400,
-                height: 600,
-                wireframes: false
+    const canvas = document.getElementById("world");
+    canvas.width = width;
+    canvas.height = height;
+
+    const render = Render.create({
+        canvas: canvas,
+        engine: engine,
+        options: {
+            width: width,
+            height: height,
+            wireframes: false,
+            background: "#ffe4f2"
+        }
+    });
+
+    Render.run(render);
+    const runner = Runner.create();
+    Runner.run(runner, engine);
+
+    const ground = Bodies.rectangle(width / 2, height + 20, width, 40, {
+        isStatic: true,
+        render: { fillStyle: "#ffb703" }
+    });
+
+    const leftWall = Bodies.rectangle(-10, height / 2, 20, height, {
+        isStatic: true,
+        render: { fillStyle: "#ffb703" }
+    });
+
+    const rightWall = Bodies.rectangle(width + 10, height / 2, 20, height, {
+        isStatic: true,
+        render: { fillStyle: "#ffb703" }
+    });
+
+    World.add(world, [ground, leftWall, rightWall]);
+
+    const snackTypes = [
+        { name: "blueberry",  img: "blueberry.png",  radius: 12,  score: 10 },
+        { name: "strawberry", img: "strawberry.png", radius: 18,  score: 20 },
+        { name: "cookie",     img: "cookie.png",     radius: 26, score: 40 },
+        { name: "whip",       img: "whip.png",       radius: 34, score: 80 },
+        { name: "cheesecake", img: "cheesecake.png", radius: 45, score: 160 }
+    ];
+
+    const loadedImages = {};
+    snackTypes.forEach(type => {
+        const img = new Image();
+        img.src = type.img;
+        img.onload = () => {
+            loadedImages[type.name] = img;
+        };
+    });
+
+    let currentSnackIndex = 0;
+    let isDropping = false;
+    let score = 0;
+    let gameOver = false;
+
+    const scoreDiv = document.getElementById("score");
+    const nextImg = document.getElementById("nextImg");
+    const messageDiv = document.getElementById("message");
+    const gameoverDiv = document.getElementById("gameover");
+    const restartBtn = document.getElementById("restart");
+
+    function updateScore(add) {
+        score += add;
+        scoreDiv.textContent = "スコア: " + score;
+        if (score >= 500) messageDiv.style.display = "block";
+    }
+
+    function setNextSnack() {
+        currentSnackIndex = Math.floor(Math.random() * snackTypes.length);
+        nextImg.src = snackTypes[currentSnackIndex].img;
+    }
+
+    setNextSnack();
+
+    function dropSnack(x) {
+        if (isDropping || gameOver) return;
+        isDropping = true;
+
+        const type = snackTypes[currentSnackIndex];
+
+        const body = Bodies.circle(x, 50, type.radius, {
+            restitution: 0.2,
+            friction: 0.8,
+            render: {
+                sprite: {
+                    texture: type.img,
+                    xScale: loadedImages[type.name]
+                        ? (type.radius * 2) / loadedImages[type.name].width
+                        : 1,
+                    yScale: loadedImages[type.name]
+                        ? (type.radius * 2) / loadedImages[type.name].height
+                        : 1
+                }
             }
         });
 
-        World.add(engine.world, [
-            Bodies.rectangle(200, 650, 400, 100, { isStatic: true }),
-            Bodies.rectangle(-20, 300, 40, 600, { isStatic: true }),
-            Bodies.rectangle(420, 300, 40, 600, { isStatic: true })
-        ]);
+        body.snackType = type;
+        body.circleRadius = type.radius;
 
-        const gameOverLineY = 180;
+        World.add(world, body);
 
-        const snackImages = [
-            "img/blueberry.png",
-            "img/strawberry.png",
-            "img/whip.png",
-            "img/cookie.png",
-            "img/cheesecake.png"
-        ];
+        setTimeout(() => {
+            isDropping = false;
+            setNextSnack();
+        }, 500);
+    }
 
-        const snackSize = [10, 15, 50, 60, 30];
+    canvas.addEventListener("click", (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        dropSnack(x);
+    });
 
-        function updateNext() {
-            nextLevel = Math.floor(Math.random() * 3);
-            document.getElementById("nextImg").src = snackImages[nextLevel];
-        }
-        updateNext();
+    Events.on(engine, "collisionStart", (event) => {
+        const pairs = event.pairs;
 
-        const baseImageSizes = [225, 225, 225, 225, 225];
+        pairs.forEach(pair => {
+            const a = pair.bodyA;
+            const b = pair.bodyB;
 
-        function createSnack(x, level = 0) {
-            const size = snackSize[level];
-            const baseSize = baseImageSizes[level];
+            if (!a.snackType || !b.snackType) return;
 
-            return Bodies.circle(x, 40, size, {
-                label: "snack",
-                level: level,
-                restitution: 0.05,
-                friction: 0.9,
-                frictionStatic: 1.0,
-                frictionAir: 0.02,
+            if (a.snackType.name !== b.snackType.name) return;
+
+            const dx = a.position.x - b.position.x;
+            const dy = a.position.y - b.position.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist > a.circleRadius + b.circleRadius - 5) return;
+
+            const index = snackTypes.findIndex(t => t.name === a.snackType.name);
+            if (index === -1 || index === snackTypes.length - 1) return;
+
+            const nextType = snackTypes[index + 1];
+
+            const newX = (a.position.x + b.position.x) / 2;
+            const newY = (a.position.y + b.position.y) / 2;
+
+            World.remove(world, a);
+            World.remove(world, b);
+
+            const newBody = Bodies.circle(newX, newY, nextType.radius, {
+                restitution: 0.2,
+                friction: 0.8,
                 render: {
                     sprite: {
-                        texture: snackImages[level],
-                        xScale: (size * 2) / baseSize,
-                        yScale: (size * 2) / baseSize
+                        texture: nextType.img,
+                        xScale: loadedImages[nextType.name]
+                            ? (nextType.radius * 2) / loadedImages[nextType.name].width
+                            : 1,
+                        yScale: loadedImages[nextType.name]
+                            ? (nextType.radius * 2) / loadedImages[nextType.name].height
+                            : 1
                     }
                 }
             });
-        }
 
-        function addScore(level) {
-            score += (level + 1) * 10;
-            document.getElementById("score").innerText = "スコア: " + score;
-        }
+            newBody.snackType = nextType;
+            newBody.circleRadius = nextType.radius;
 
-        function mergeSnacks(a, b) {
-            const newLevel = a.level + 1;
-            const x = (a.position.x + b.position.x) / 2;
+            World.add(world, newBody);
 
-            World.remove(engine.world, a);
-            World.remove(engine.world, b);
+            updateScore(nextType.score);
+        });
+    });
 
-            const newSnack = createSnack(x, newLevel);
-            World.add(engine.world, newSnack);
+    Events.on(engine, "afterUpdate", () => {
+        if (gameOver) return;
 
-            addScore(newLevel);
-
-            if (newLevel === snackImages.length - 1) {
-                setTimeout(() => {
-                    const msg = document.getElementById("message");
-                    msg.style.display = "block";
-                    setTimeout(() => msg.style.display = "none", 2000);
-                }, 300);
-            }
-
-            setTimeout(() => checkChainMerge(newSnack), 50);
-        }
-
-        function checkChainMerge(body) {
-            const bodies = Composite.allBodies(engine.world);
-
-            for (let other of bodies) {
-                if (other === body) continue;
-                if (other.label !== "snack") continue;
-                if (other.level !== body.level) continue;
-
-                const dx = other.position.x - body.position.x;
-                const dy = other.position.y - body.position.y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-
-                if (dist < snackSize[body.level] * 1.2) {
-                    mergeSnacks(body, other);
-                    return;
-                }
+        const bodies = Composite.allBodies(world);
+        for (let body of bodies) {
+            if (body.snackType && body.position.y < 50) {
+                gameOver = true;
+                gameoverDiv.style.display = "block";
+                break;
             }
         }
+    });
 
-        Events.on(engine, "collisionStart", event => {
-            event.pairs.forEach(pair => {
-                const a = pair.bodyA;
-                const b = pair.bodyB;
-
-                if (a.label === "snack" && b.label === "snack") {
-                    if (a.level === b.level) mergeSnacks(a, b);
-                }
-            });
+    restartBtn.addEventListener("click", () => {
+        const bodies = Composite.allBodies(world);
+        bodies.forEach(b => {
+            if (!b.isStatic) World.remove(world, b);
         });
 
-        document.addEventListener("click", e => {
-            const rect = render.canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
+        World.add(world, [ground, leftWall, rightWall]);
 
-            const snack = createSnack(x, nextLevel);
-            World.add(engine.world, snack);
-
-            updateNext();
-        });
-
-        Engine.run(engine);
-        Render.run(render);
+        score = 0;
+        gameOver = false;
+        scoreDiv.textContent = "スコア: 0";
+        gameoverDiv.style.display = "none";
+        messageDiv.style.display = "none";
+        setNextSnack();
+    });
     </script>
-
 </body>
 </html>
+
